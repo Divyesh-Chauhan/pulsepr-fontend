@@ -760,3 +760,4 @@ npx vercel --prod   # Deploy production
 ---
 
 *Built with ❤️ for PULSEPR clothing brand.*
+"# pulsepr-fontend" 
