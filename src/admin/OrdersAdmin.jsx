@@ -12,7 +12,6 @@ function getImageUrl(url) {
 }
 
 const STATUS_OPTIONS_ORDER = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled']
-const STATUS_OPTIONS_DESIGN = ['Pending', 'Reviewed', 'InProduction', 'Completed', 'Rejected']
 
 const STATUS_COLORS = {
     Pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
@@ -20,10 +19,6 @@ const STATUS_COLORS = {
     Shipped: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
     Delivered: 'bg-green-500/10 text-green-400 border-green-500/30',
     Cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
-    Reviewed: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    InProduction: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-    Completed: 'bg-green-500/10 text-green-400 border-green-500/30',
-    Rejected: 'bg-red-500/10 text-red-400 border-red-500/30',
 }
 
 export default function OrdersAdmin() {
@@ -58,6 +53,13 @@ export default function OrdersAdmin() {
                         if (sizeMatch) size = sizeMatch[1]
                     }
 
+                    let mappedStatus = 'Pending'
+                    if (d.status === 'Pending') mappedStatus = 'Paid'
+                    if (d.status === 'Reviewed') mappedStatus = 'Paid'
+                    if (d.status === 'InProduction') mappedStatus = 'Shipped'
+                    if (d.status === 'Completed') mappedStatus = 'Delivered'
+                    if (d.status === 'Rejected') mappedStatus = 'Cancelled'
+
                     return {
                         id: `CD-${d.id}`,
                         realId: d.id,
@@ -66,7 +68,8 @@ export default function OrdersAdmin() {
                         user: { name: `User ID: ${d.userId}` },
                         createdAt: d.createdAt,
                         totalAmount: 509,
-                        orderStatus: d.status,
+                        orderStatus: mappedStatus,
+                        rawStatus: d.status,
                         address: address,
                         designNote: d.note,
                         imageUrl: d.imageUrl,
@@ -94,7 +97,13 @@ export default function OrdersAdmin() {
         setUpdatingId(order.id)
         try {
             if (order.isCustomDesign) {
-                await adminUpdateDesignStatus(order.realId, newStatus, 'Status updated via Orders')
+                let designStatus = 'Pending'
+                if (newStatus === 'Paid') designStatus = 'Reviewed'
+                if (newStatus === 'Shipped') designStatus = 'InProduction'
+                if (newStatus === 'Delivered') designStatus = 'Completed'
+                if (newStatus === 'Cancelled') designStatus = 'Rejected'
+
+                await adminUpdateDesignStatus(order.realId, designStatus, 'Status updated via Orders')
             } else {
                 await adminUpdateOrderStatus(order.id, newStatus)
             }
@@ -120,7 +129,7 @@ export default function OrdersAdmin() {
                 </div>
                 {/* Filter */}
                 <div className="flex gap-2 flex-wrap">
-                    {['All', ...STATUS_OPTIONS_ORDER, 'Completed'].map((s) => (
+                    {['All', ...STATUS_OPTIONS_ORDER].map((s) => (
                         <button
                             key={s}
                             onClick={() => setFilterStatus(s)}
@@ -129,7 +138,7 @@ export default function OrdersAdmin() {
                                 : 'border-brand-border text-brand-muted hover:text-brand-white'
                                 }`}
                         >
-                            {s === 'Completed' ? 'Dispatched' : s}
+                            {s}
                         </button>
                     ))}
                 </div>
@@ -164,7 +173,7 @@ export default function OrdersAdmin() {
                                     <p className="text-sm font-bold text-brand-white">₹{order.totalAmount?.toLocaleString()}</p>
                                 </div>
                                 <span className={`status-badge border ml-auto ${STATUS_COLORS[order.orderStatus] || ''}`}>
-                                    {order.orderStatus === 'Completed' ? 'Dispatched (Completed)' : order.orderStatus}
+                                    {order.orderStatus}
                                 </span>
                                 {expanded === order.id ? <HiChevronUp className="text-brand-muted flex-shrink-0" /> : <HiChevronDown className="text-brand-muted flex-shrink-0" />}
                             </button>
@@ -212,8 +221,8 @@ export default function OrdersAdmin() {
                                             disabled={updatingId === order.id}
                                             className="input-field max-w-[160px] cursor-pointer text-xs"
                                         >
-                                            {(order.isCustomDesign ? STATUS_OPTIONS_DESIGN : STATUS_OPTIONS_ORDER).map((s) => (
-                                                <option key={s} value={s}>{s === 'Completed' ? 'Dispatched (Completed)' : s === 'InProduction' ? 'In Production' : s}</option>
+                                            {STATUS_OPTIONS_ORDER.map((s) => (
+                                                <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
                                         {updatingId === order.id && (

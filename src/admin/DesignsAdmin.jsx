@@ -77,7 +77,7 @@ export default function DesignsAdmin() {
                                                     design.status === 'Completed' ? 'bg-green-500/20 text-green-500' :
                                                         'bg-red-500/20 text-red-500'
                                             }`}>
-                                            {design.status === 'Completed' ? 'Dispatched' : design.status === 'InProduction' ? 'In Production' : design.status}
+                                            {design.status === 'InProduction' ? 'In Production' : design.status}
                                         </span>
                                     </div>
                                     <div className="text-xs text-brand-muted space-y-1">
@@ -122,7 +122,7 @@ export default function DesignsAdmin() {
                                             <option value="Pending">Pending</option>
                                             <option value="Reviewed">Reviewed</option>
                                             <option value="InProduction">In Production</option>
-                                            <option value="Completed">Dispatched (Completed)</option>
+                                            <option value="Completed">Completed</option>
                                             <option value="Rejected">Rejected</option>
                                         </select>
 
