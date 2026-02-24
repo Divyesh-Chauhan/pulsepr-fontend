@@ -13,6 +13,17 @@ export default function CustomDesign() {
     const [file, setFile] = useState(null)
     const [formData, setFormData] = useState({ title: '', address: '', note: '', printSize: '', quantity: 1 })
 
+    const handleDragOver = (e) => {
+        e.preventDefault()
+    }
+
+    const handleDrop = (e) => {
+        e.preventDefault()
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setFile(e.dataTransfer.files[0])
+        }
+    }
+
     useEffect(() => {
         fetchDesigns()
     }, [])
@@ -115,18 +126,21 @@ export default function CustomDesign() {
                         <form onSubmit={handlePaymentAndUpload} className="space-y-6">
                             <div>
                                 <label className="label">Upload Image</label>
-                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brand-border border-dashed rounded-md hover:border-brand-accent transition-colors">
+                                <label
+                                    onDragOver={handleDragOver}
+                                    onDrop={handleDrop}
+                                    className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-brand-border border-dashed rounded-md hover:border-brand-accent transition-colors cursor-pointer group"
+                                >
                                     <div className="space-y-1 text-center">
-                                        <HiOutlineUpload className="mx-auto h-12 w-12 text-brand-muted" />
-                                        <div className="flex text-sm text-brand-muted justify-center">
-                                            <label className="relative cursor-pointer rounded-md font-medium text-brand-accent hover:text-brand-white focus-within:outline-none">
-                                                <span>Upload a file</span>
-                                                <input id="file-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => setFile(e.target.files[0])} />
-                                            </label>
+                                        <HiOutlineUpload className={`mx-auto h-12 w-12 transition-colors ${file ? 'text-brand-accent' : 'text-brand-muted group-hover:text-brand-accent'}`} />
+                                        <div className="flex flex-col text-sm text-brand-muted justify-center items-center mt-2">
+                                            <span className="font-medium text-brand-accent group-hover:text-brand-white transition-colors">Click to upload or drag and drop</span>
+                                            <span className="text-xs mt-1">SVG, PNG, JPG or GIF</span>
+                                            <input type="file" className="sr-only" accept="image/*" onChange={(e) => { if (e.target.files[0]) setFile(e.target.files[0]) }} />
                                         </div>
-                                        {file && <p className="text-xs text-brand-white mt-2">{file.name}</p>}
+                                        {file && <p className="text-sm font-bold text-brand-white mt-4" style={{ wordBreak: 'break-all' }}>{file.name}</p>}
                                     </div>
-                                </div>
+                                </label>
                             </div>
 
                             <div>
