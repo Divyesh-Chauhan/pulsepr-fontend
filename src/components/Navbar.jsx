@@ -32,6 +32,7 @@ export default function Navbar() {
     const navLinks = [
         { to: '/', label: 'Home' },
         { to: '/products', label: 'Shop' },
+        { to: '/custom-design', label: 'Custom' },
     ]
 
     return (
@@ -51,8 +52,8 @@ export default function Navbar() {
                                 key={link.to}
                                 to={link.to}
                                 className={`text-xs font-semibold uppercase tracking-widest transition-colors ${location.pathname === link.to
-                                        ? 'text-brand-accent'
-                                        : 'text-brand-muted hover:text-brand-white'
+                                    ? 'text-brand-accent'
+                                    : 'text-brand-muted hover:text-brand-white'
                                     }`}
                             >
                                 {link.label}

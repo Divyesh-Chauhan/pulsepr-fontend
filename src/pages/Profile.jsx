@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
-import { HiOutlineUser, HiOutlineShoppingBag, HiOutlineLogout } from 'react-icons/hi'
+import { HiOutlineUser, HiOutlineShoppingBag, HiOutlineLogout, HiOutlinePhotograph } from 'react-icons/hi'
 
 export default function Profile() {
     const { user, logout, isAdmin } = useAuth()
@@ -56,6 +56,13 @@ export default function Profile() {
                         <div>
                             <p className="text-sm font-semibold text-brand-white">My Orders</p>
                             <p className="text-xs text-brand-muted">Track your orders</p>
+                        </div>
+                    </Link>
+                    <Link to="/custom-design" className="card p-5 flex items-center gap-4 hover:border-brand-accent transition-colors">
+                        <HiOutlinePhotograph size={24} className="text-brand-accent" />
+                        <div>
+                            <p className="text-sm font-semibold text-brand-white">Custom Designs</p>
+                            <p className="text-xs text-brand-muted">Upload & view designs</p>
                         </div>
                     </Link>
                     {isAdmin && (

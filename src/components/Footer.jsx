@@ -1,6 +1,23 @@
 import { Link } from 'react-router-dom'
 import { FiInstagram, FiTwitter, FiYoutube } from 'react-icons/fi'
 
+const socialLinks = [
+    {
+        Icon: FiInstagram,
+        href: 'https://www.instagram.com/pulse_pr_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+        label: 'Instagram',
+    },
+    { Icon: FiTwitter, href: '#', label: 'Twitter' },
+    { Icon: FiYoutube, href: '#', label: 'YouTube' },
+]
+
+const infoLinks = [
+    { label: 'About Us', to: '/about' },
+    { label: 'Shipping Policy', to: '/shipping-policy' },
+    { label: 'Return Policy', to: '/return-policy' },
+    { label: 'Contact', to: '/contact' },
+]
+
 export default function Footer() {
     return (
         <footer className="bg-brand-gray border-t border-brand-border mt-auto">
@@ -13,10 +30,13 @@ export default function Footer() {
                             Premium streetwear crafted for those who set the pulse. Every thread tells a story.
                         </p>
                         <div className="flex gap-4 mt-6">
-                            {[FiInstagram, FiTwitter, FiYoutube].map((Icon, i) => (
+                            {socialLinks.map(({ Icon, href, label }) => (
                                 <a
-                                    key={i}
-                                    href="#"
+                                    key={label}
+                                    href={href}
+                                    target={href !== '#' ? '_blank' : undefined}
+                                    rel={href !== '#' ? 'noopener noreferrer' : undefined}
+                                    aria-label={label}
                                     className="w-9 h-9 border border-brand-border flex items-center justify-center text-brand-muted hover:text-brand-accent hover:border-brand-accent transition-all duration-200"
                                 >
                                     <Icon size={16} />
@@ -46,11 +66,14 @@ export default function Footer() {
                     <div>
                         <h4 className="text-xs font-semibold uppercase tracking-widest text-brand-white mb-4">Info</h4>
                         <ul className="space-y-3">
-                            {['About Us', 'Size Guide', 'Shipping Policy', 'Return Policy', 'Contact'].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="text-sm text-brand-muted hover:text-brand-white transition-colors">
-                                        {item}
-                                    </a>
+                            {infoLinks.map(({ label, to }) => (
+                                <li key={label}>
+                                    <Link
+                                        to={to}
+                                        className="text-sm text-brand-muted hover:text-brand-white transition-colors"
+                                    >
+                                        {label}
+                                    </Link>
                                 </li>
                             ))}
                         </ul>

@@ -10,6 +10,10 @@ import Products from './pages/Products'
 import ProductDetails from './pages/ProductDetails'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import ShippingPolicy from './pages/ShippingPolicy'
+import ReturnPolicy from './pages/ReturnPolicy'
 
 // User Pages
 import Cart from './pages/Cart'
@@ -17,6 +21,7 @@ import Checkout from './pages/Checkout'
 import Orders from './pages/Orders'
 import Profile from './pages/Profile'
 import OrderSuccess from './pages/OrderSuccess'
+import CustomDesign from './pages/CustomDesign'
 
 // Admin Pages
 import Dashboard from './admin/Dashboard'
@@ -63,6 +68,10 @@ function App() {
                                     <Route path="/products/:id" element={<ProductDetails />} />
                                     <Route path="/login" element={<Login />} />
                                     <Route path="/register" element={<Register />} />
+                                    <Route path="/about" element={<About />} />
+                                    <Route path="/contact" element={<Contact />} />
+                                    <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                                    <Route path="/return-policy" element={<ReturnPolicy />} />
                                     <Route
                                         path="/cart"
                                         element={
@@ -92,6 +101,14 @@ function App() {
                                         element={
                                             <ProtectedRoute>
                                                 <Profile />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/custom-design"
+                                        element={
+                                            <ProtectedRoute>
+                                                <CustomDesign />
                                             </ProtectedRoute>
                                         }
                                     />

@@ -48,4 +48,11 @@ export const adminApplyOffer = (data) => api.post('/api/admin/offers/apply', dat
 
 // ============ USER — ORDERS ============
 export const getUserOrders = () => api.get('/api/admin/orders') // user sees own orders via admin if needed
-// Note: user orders are typically filtered server-side based on JWT
+// ============ USER — DESIGNS ============
+export const uploadDesign = (formData) =>
+    api.post('/api/designs/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    })
+export const getMyDesigns = () => api.get('/api/designs/my-designs')
+export const getDesignById = (id) => api.get(`/api/designs/${id}`)
+export const deleteDesign = (id) => api.delete(`/api/designs/${id}`)
