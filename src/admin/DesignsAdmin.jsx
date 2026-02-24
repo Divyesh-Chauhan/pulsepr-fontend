@@ -43,33 +43,6 @@ export default function DesignsAdmin() {
         }
     }
 
-    const handleAddToShop = () => {
-        if (!selectedDesign) return
-
-        let title = `Custom Design #${selectedDesign.userId}`
-        let noteDesc = selectedDesign.note || ''
-
-        if (selectedDesign.note && selectedDesign.note.includes('Title:')) {
-            const titleMatch = selectedDesign.note.match(/Title:\s*(.*?)\s*\|/)
-            if (titleMatch) title = titleMatch[1]
-        }
-
-        navigate('/admin/product/add', {
-            state: {
-                form: {
-                    name: title,
-                    brand: 'PULSEPR',
-                    description: `Converted from Custom Design.\nPrint Size: ${selectedDesign.printSize || 'N/A'}\nUser Note: ${noteDesc}`,
-                    price: '999',
-                    discountPrice: '799',
-                    category: 'Graphic Tee',
-                    isActive: true,
-                },
-                images: [selectedDesign.imageUrl],
-            },
-        })
-    }
-
     if (loading) return <div className="flex items-center justify-center h-64"><Loader size="lg" /></div>
 
     return (
@@ -104,7 +77,7 @@ export default function DesignsAdmin() {
                                                     design.status === 'Completed' ? 'bg-green-500/20 text-green-500' :
                                                         'bg-red-500/20 text-red-500'
                                             }`}>
-                                            {design.status}
+                                            {design.status === 'Completed' ? 'Dispatched' : design.status === 'InProduction' ? 'In Production' : design.status}
                                         </span>
                                     </div>
                                     <div className="text-xs text-brand-muted space-y-1">
@@ -149,7 +122,7 @@ export default function DesignsAdmin() {
                                             <option value="Pending">Pending</option>
                                             <option value="Reviewed">Reviewed</option>
                                             <option value="InProduction">In Production</option>
-                                            <option value="Completed">Completed</option>
+                                            <option value="Completed">Dispatched (Completed)</option>
                                             <option value="Rejected">Rejected</option>
                                         </select>
 
@@ -167,15 +140,6 @@ export default function DesignsAdmin() {
                                         >
                                             Save Changes
                                         </button>
-
-                                        {selectedDesign.status === 'Completed' && (
-                                            <button
-                                                onClick={handleAddToShop}
-                                                className="btn-secondary w-full justify-center text-xs flex items-center gap-2 border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-brand-black"
-                                            >
-                                                <HiOutlinePlus size={14} /> Add to Shop Product
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>

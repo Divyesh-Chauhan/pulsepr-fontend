@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { adminGetOrders, adminUpdateOrderStatus } from '../api/services'
+import { adminGetOrders, adminUpdateOrderStatus, adminGetAllDesigns, adminUpdateDesignStatus } from '../api/services'
 import Loader from '../components/Loader'
 import toast from 'react-hot-toast'
 import { HiChevronDown, HiChevronUp } from 'react-icons/hi'
@@ -11,13 +11,19 @@ function getImageUrl(url) {
     return `${API_URL}${url}`
 }
 
-const STATUS_OPTIONS = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled']
+const STATUS_OPTIONS_ORDER = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled']
+const STATUS_OPTIONS_DESIGN = ['Pending', 'Reviewed', 'InProduction', 'Completed', 'Rejected']
+
 const STATUS_COLORS = {
     Pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
     Paid: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
     Shipped: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
     Delivered: 'bg-green-500/10 text-green-400 border-green-500/30',
     Cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
+    Reviewed: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+    InProduction: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+    Completed: 'bg-green-500/10 text-green-400 border-green-500/30',
+    Rejected: 'bg-red-500/10 text-red-400 border-red-500/30',
 }
 
 export default function OrdersAdmin() {
@@ -28,17 +34,71 @@ export default function OrdersAdmin() {
     const [filterStatus, setFilterStatus] = useState('All')
 
     useEffect(() => {
-        adminGetOrders()
-            .then((res) => setOrders(res.data.orders || []))
-            .catch(() => toast.error('Failed to load orders'))
-            .finally(() => setLoading(false))
+        const fetchData = async () => {
+            try {
+                const [ordersRes, designsRes] = await Promise.all([
+                    adminGetOrders().catch(() => ({ data: { orders: [] } })),
+                    adminGetAllDesigns().catch(() => ({ data: { designs: [] } }))
+                ])
+
+                const normalOrders = (ordersRes.data.orders || []).map(o => ({ ...o, isCustomDesign: false }))
+
+                const customDesigns = (designsRes.data.designs || []).map(d => {
+                    let title = 'Custom Design T-Shirt'
+                    let address = 'N/A'
+                    let size = d.printSize || 'N/A'
+
+                    if (d.note) {
+                        const titleMatch = d.note.match(/Title:\s*(.*?)\s*\|/)
+                        const addressMatch = d.note.match(/Address:\s*(.*?)\s*\|/)
+                        const sizeMatch = d.note.match(/T-Shirt:\s*(.*?)\s*\|/)
+
+                        if (titleMatch) title = titleMatch[1]
+                        if (addressMatch) address = addressMatch[1]
+                        if (sizeMatch) size = sizeMatch[1]
+                    }
+
+                    return {
+                        id: `CD-${d.id}`,
+                        realId: d.id,
+                        isCustomDesign: true,
+                        userId: d.userId,
+                        user: { name: `User ID: ${d.userId}` },
+                        createdAt: d.createdAt,
+                        totalAmount: 509,
+                        orderStatus: d.status,
+                        address: address,
+                        designNote: d.note,
+                        imageUrl: d.imageUrl,
+                        orderItems: [{
+                            product: { name: title, images: [{ imageUrl: d.imageUrl }] },
+                            size: size,
+                            quantity: d.quantity,
+                            price: 509
+                        }]
+                    }
+                })
+
+                const combined = [...normalOrders, ...customDesigns].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                setOrders(combined)
+            } catch (err) {
+                toast.error('Failed to load orders and designs')
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
     }, [])
 
-    const handleStatusChange = async (orderId, newStatus) => {
-        setUpdatingId(orderId)
+    const handleStatusChange = async (order, newStatus) => {
+        setUpdatingId(order.id)
         try {
-            await adminUpdateOrderStatus(orderId, newStatus)
-            setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, orderStatus: newStatus } : o))
+            if (order.isCustomDesign) {
+                await adminUpdateDesignStatus(order.realId, newStatus, 'Status updated via Orders')
+            } else {
+                await adminUpdateOrderStatus(order.id, newStatus)
+            }
+            setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, orderStatus: newStatus } : o))
             toast.success('Status updated')
         } catch (err) {
             toast.error(err.response?.data?.message || 'Update failed')
@@ -60,16 +120,16 @@ export default function OrdersAdmin() {
                 </div>
                 {/* Filter */}
                 <div className="flex gap-2 flex-wrap">
-                    {['All', ...STATUS_OPTIONS].map((s) => (
+                    {['All', ...STATUS_OPTIONS_ORDER, 'Completed'].map((s) => (
                         <button
                             key={s}
                             onClick={() => setFilterStatus(s)}
                             className={`text-xs font-semibold uppercase tracking-widest px-3 py-1.5 border transition-colors ${filterStatus === s
-                                    ? 'bg-brand-accent text-brand-black border-brand-accent'
-                                    : 'border-brand-border text-brand-muted hover:text-brand-white'
+                                ? 'bg-brand-accent text-brand-black border-brand-accent'
+                                : 'border-brand-border text-brand-muted hover:text-brand-white'
                                 }`}
                         >
-                            {s}
+                            {s === 'Completed' ? 'Dispatched' : s}
                         </button>
                     ))}
                 </div>
@@ -104,7 +164,7 @@ export default function OrdersAdmin() {
                                     <p className="text-sm font-bold text-brand-white">₹{order.totalAmount?.toLocaleString()}</p>
                                 </div>
                                 <span className={`status-badge border ml-auto ${STATUS_COLORS[order.orderStatus] || ''}`}>
-                                    {order.orderStatus}
+                                    {order.orderStatus === 'Completed' ? 'Dispatched (Completed)' : order.orderStatus}
                                 </span>
                                 {expanded === order.id ? <HiChevronUp className="text-brand-muted flex-shrink-0" /> : <HiChevronDown className="text-brand-muted flex-shrink-0" />}
                             </button>
@@ -148,14 +208,22 @@ export default function OrdersAdmin() {
                                         <label className="label mb-0">Update Status:</label>
                                         <select
                                             value={order.orderStatus}
-                                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                            onChange={(e) => handleStatusChange(order, e.target.value)}
                                             disabled={updatingId === order.id}
                                             className="input-field max-w-[160px] cursor-pointer text-xs"
                                         >
-                                            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                                            {(order.isCustomDesign ? STATUS_OPTIONS_DESIGN : STATUS_OPTIONS_ORDER).map((s) => (
+                                                <option key={s} value={s}>{s === 'Completed' ? 'Dispatched (Completed)' : s === 'InProduction' ? 'In Production' : s}</option>
+                                            ))}
                                         </select>
                                         {updatingId === order.id && (
                                             <span className="w-4 h-4 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
+                                        )}
+
+                                        {order.isCustomDesign && (
+                                            <a href={order.imageUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-xs text-brand-accent hover:underline">
+                                                View Source Design Image
+                                            </a>
                                         )}
                                     </div>
                                 </div>

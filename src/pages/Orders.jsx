@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getMyDesigns } from '../api/services'
 import api from '../api/axios'
 import Loader from '../components/Loader'
 import { HiOutlineShoppingBag, HiChevronDown, HiChevronUp } from 'react-icons/hi'
@@ -24,19 +25,65 @@ export default function Orders() {
     const [expanded, setExpanded] = useState(null)
 
     useEffect(() => {
-        const fetchOrders = async () => {
+        const fetchOrdersAndDesigns = async () => {
             try {
-                // Fetch user's own orders from the user-specific endpoint
-                const res = await api.get('/api/auth/orders')
-                setOrders(res.data.orders || [])
-            } catch {
-                // Fallback: if no user-specific route, show empty
+                const [ordersRes, designsRes] = await Promise.all([
+                    api.get('/api/auth/orders').catch(() => ({ data: { orders: [] } })),
+                    getMyDesigns().catch(() => ({ data: { designs: [] } }))
+                ])
+
+                const normalOrders = ordersRes.data.orders || []
+
+                const customDesigns = (designsRes.data.designs || []).map(d => {
+                    let title = 'Custom Design T-Shirt'
+                    let address = 'N/A'
+                    let size = d.printSize || 'N/A'
+
+                    if (d.note) {
+                        const titleMatch = d.note.match(/Title:\s*(.*?)\s*\|/)
+                        const addressMatch = d.note.match(/Address:\s*(.*?)\s*\|/)
+                        const sizeMatch = d.note.match(/T-Shirt:\s*(.*?)\s*\|/)
+
+                        if (titleMatch) title = titleMatch[1]
+                        if (addressMatch) address = addressMatch[1]
+                        if (sizeMatch) size = sizeMatch[1]
+                    }
+
+                    // Map design status conceptually to timeline steps
+                    let mappedStatus = 'Pending'
+                    if (d.status === 'Pending') mappedStatus = 'Paid'
+                    if (d.status === 'Reviewed') mappedStatus = 'Paid'
+                    if (d.status === 'InProduction') mappedStatus = 'Shipped' // or "InProduction"
+                    if (d.status === 'Completed') mappedStatus = 'Delivered'
+                    if (d.status === 'Rejected') mappedStatus = 'Cancelled'
+
+                    return {
+                        id: `CD-${d.id}`,
+                        isCustomDesign: true,
+                        createdAt: d.createdAt,
+                        totalAmount: 509,
+                        orderStatus: mappedStatus,
+                        rawStatus: d.status,
+                        address: address,
+                        orderItems: [{
+                            product: { name: title, images: [{ imageUrl: d.imageUrl }] },
+                            size: size,
+                            quantity: d.quantity,
+                            price: 509
+                        }]
+                    }
+                })
+
+                const combined = [...normalOrders, ...customDesigns].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                setOrders(combined)
+            } catch (err) {
+                console.error('Failed to fetch orders/designs', err)
                 setOrders([])
             } finally {
                 setLoading(false)
             }
         }
-        fetchOrders()
+        fetchOrdersAndDesigns()
     }, [])
 
     if (loading) return <div className="min-h-screen pt-20 flex items-center justify-center"><Loader size="lg" /></div>
