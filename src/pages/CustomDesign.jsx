@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
 import { uploadDesign, getMyDesigns, deleteDesign } from '../api/services'
-import { HiOutlineUpload, HiOutlineTrash, HiOutlinePhotograph } from 'react-icons/hi'
+import { useAuth } from '../context/AuthContext'
+import { HiOutlineUpload, HiOutlineTrash, HiOutlinePhotograph, HiOutlineLockClosed } from 'react-icons/hi'
 import toast from 'react-hot-toast'
 import Loader from '../components/Loader'
 
 export default function CustomDesign() {
+    const { user } = useAuth()
     const [designs, setDesigns] = useState([])
     const [loading, setLoading] = useState(true)
     const [uploading, setUploading] = useState(false)
     const [file, setFile] = useState(null)
-    const [formData, setFormData] = useState({ note: '', printSize: '', quantity: 1 })
+    const [formData, setFormData] = useState({ title: '', address: '', note: '', printSize: '', quantity: 1 })
 
     useEffect(() => {
         fetchDesigns()
@@ -27,26 +29,63 @@ export default function CustomDesign() {
         }
     }
 
-    const handleUpload = async (e) => {
+    const handlePaymentAndUpload = async (e) => {
         e.preventDefault()
         if (!file) return toast.error('Please select an image file first')
+        if (!formData.title.trim()) return toast.error('Please enter a title')
+        if (!formData.address.trim()) return toast.error('Please enter an address')
 
-        const data = new FormData()
-        data.append('design', file)
-        data.append('note', formData.note)
-        data.append('printSize', formData.printSize)
-        data.append('quantity', formData.quantity)
+        setUploading(true)
+
+        const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: 509 * 100, // 400 (T-shirt) + 30 (Design) + 79 (Shipping)
+            currency: 'INR',
+            name: 'PULSEPR',
+            description: 'Custom Design Fee (T-Shirt + Design + Shipping)',
+            prefill: {
+                name: user?.name,
+                email: user?.email,
+            },
+            theme: { color: '#d4ff00' },
+            handler: async (response) => {
+                const mergedNote = `Title: ${formData.title} | Address: ${formData.address} | Note: ${formData.note} | PaymentID: ${response.razorpay_payment_id}`
+
+                const data = new FormData()
+                data.append('design', file)
+                data.append('note', mergedNote)
+                data.append('printSize', formData.printSize)
+                data.append('quantity', formData.quantity)
+
+                try {
+                    await uploadDesign(data)
+                    toast.success('Payment successful & Design uploaded!')
+                    setFile(null)
+                    setFormData({ title: '', address: '', note: '', printSize: '', quantity: 1 })
+                    fetchDesigns()
+                } catch (err) {
+                    toast.error(err.response?.data?.message || 'Failed to upload design after payment')
+                } finally {
+                    setUploading(false)
+                }
+            },
+            modal: {
+                ondismiss: () => {
+                    toast.error('Payment cancelled')
+                    setUploading(false)
+                },
+            },
+        }
 
         try {
-            setUploading(true)
-            await uploadDesign(data)
-            toast.success('Design uploaded successfully!')
-            setFile(null)
-            setFormData({ note: '', printSize: '', quantity: 1 })
-            fetchDesigns()
+            const rzp = new window.Razorpay(options)
+            rzp.on('payment.failed', () => {
+                toast.error('Payment failed. Please try again.')
+                setUploading(false)
+            })
+            rzp.open()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to upload design')
-        } finally {
+            toast.error('Could not initiate Razorpay. Please make sure script is loaded.')
             setUploading(false)
         }
     }
@@ -73,7 +112,7 @@ export default function CustomDesign() {
                     {/* Upload Form */}
                     <div className="bg-brand-gray border border-brand-border p-6 rounded-md">
                         <h2 className="text-xl font-display text-brand-white uppercase mb-6">Upload New Design</h2>
-                        <form onSubmit={handleUpload} className="space-y-6">
+                        <form onSubmit={handlePaymentAndUpload} className="space-y-6">
                             <div>
                                 <label className="label">Upload Image</label>
                                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brand-border border-dashed rounded-md hover:border-brand-accent transition-colors">
@@ -88,6 +127,18 @@ export default function CustomDesign() {
                                         {file && <p className="text-xs text-brand-white mt-2">{file.name}</p>}
                                     </div>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="label">Title *</label>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="Enter a title for your design"
+                                    value={formData.title}
+                                    required
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                />
                             </div>
 
                             <div>
@@ -113,6 +164,17 @@ export default function CustomDesign() {
                             </div>
 
                             <div>
+                                <label className="label">Delivery Address *</label>
+                                <textarea
+                                    className="input-field resize-none min-h-[80px]"
+                                    placeholder="Enter your complete delivery address"
+                                    value={formData.address}
+                                    required
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
                                 <label className="label">Special Instructions / Note</label>
                                 <textarea
                                     className="input-field min-h-[100px]"
@@ -123,8 +185,15 @@ export default function CustomDesign() {
                             </div>
 
                             <button type="submit" disabled={uploading || !file} className="btn-primary w-full justify-center py-3 text-sm">
-                                {uploading ? 'Uploading...' : 'Submit Design'}
+                                {uploading ? 'Processing...' : (
+                                    <span className="flex items-center gap-2">
+                                        <HiOutlineLockClosed size={16} /> Pay ₹509 & Submit
+                                    </span>
+                                )}
                             </button>
+                            <p className="text-[10px] text-brand-muted text-center mt-2">
+                                Fixed price: ₹400 (T-Shirt) + ₹30 (Design) + ₹79 (Shipping)
+                            </p>
                         </form>
                     </div>
 
@@ -144,9 +213,9 @@ export default function CustomDesign() {
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${design.status === 'Pending' ? 'bg-yellow-500/20 text-yellow-500' :
-                                                        design.status === 'Approved' ? 'bg-green-500/20 text-green-500' :
-                                                            design.status === 'Rejected' ? 'bg-red-500/20 text-red-500' :
-                                                                'bg-blue-500/20 text-blue-500'
+                                                    design.status === 'Approved' ? 'bg-green-500/20 text-green-500' :
+                                                        design.status === 'Rejected' ? 'bg-red-500/20 text-red-500' :
+                                                            'bg-blue-500/20 text-blue-500'
                                                     }`}>
                                                     {design.status}
                                                 </span>

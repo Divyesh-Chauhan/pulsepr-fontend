@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { adminUploadImages, adminAddProduct } from '../api/services'
 import toast from 'react-hot-toast'
 import { HiArrowLeft, HiPlus, HiTrash, HiUpload } from 'react-icons/hi'
@@ -12,7 +12,9 @@ const defaultSizes = SIZES.map((s) => ({ size: s, stockQuantity: 0 }))
 
 export default function AddProduct() {
     const navigate = useNavigate()
-    const [form, setForm] = useState({
+    const location = useLocation()
+
+    const [form, setForm] = useState(location.state?.form || {
         name: '',
         brand: 'PULSEPR',
         description: '',
@@ -22,7 +24,7 @@ export default function AddProduct() {
         isActive: true,
     })
     const [sizes, setSizes] = useState(defaultSizes)
-    const [images, setImages] = useState([]) // uploaded URL strings
+    const [images, setImages] = useState(location.state?.images || []) // uploaded URL strings
     const [uploading, setUploading] = useState(false)
     const [saving, setSaving] = useState(false)
 

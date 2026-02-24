@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { adminGetAllDesigns, adminUpdateDesignStatus } from '../api/services'
 import Loader from '../components/Loader'
-import { HiOutlinePhotograph, HiOutlineCheck, HiOutlineX } from 'react-icons/hi'
+import { HiOutlinePhotograph, HiOutlineCheck, HiOutlineX, HiOutlinePlus } from 'react-icons/hi'
 import toast from 'react-hot-toast'
 
 export default function DesignsAdmin() {
+    const navigate = useNavigate()
     const [designs, setDesigns] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedDesign, setSelectedDesign] = useState(null)
@@ -31,12 +33,41 @@ export default function DesignsAdmin() {
         try {
             await adminUpdateDesignStatus(id, status, adminNote)
             toast.success(`Design marked as ${status}`)
-            setSelectedDesign(null)
-            setAdminNote('')
             fetchDesigns()
+            if (selectedDesign && selectedDesign.id === id) {
+                setSelectedDesign((prev) => ({ ...prev, status }))
+            }
+            setAdminNote('')
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update status')
         }
+    }
+
+    const handleAddToShop = () => {
+        if (!selectedDesign) return
+
+        let title = `Custom Design #${selectedDesign.userId}`
+        let noteDesc = selectedDesign.note || ''
+
+        if (selectedDesign.note && selectedDesign.note.includes('Title:')) {
+            const titleMatch = selectedDesign.note.match(/Title:\s*(.*?)\s*\|/)
+            if (titleMatch) title = titleMatch[1]
+        }
+
+        navigate('/admin/product/add', {
+            state: {
+                form: {
+                    name: title,
+                    brand: 'PULSEPR',
+                    description: `Converted from Custom Design.\nPrint Size: ${selectedDesign.printSize || 'N/A'}\nUser Note: ${noteDesc}`,
+                    price: '999',
+                    discountPrice: '799',
+                    category: 'Graphic Tee',
+                    isActive: true,
+                },
+                images: [selectedDesign.imageUrl],
+            },
+        })
     }
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader size="lg" /></div>
@@ -68,10 +99,10 @@ export default function DesignsAdmin() {
                                             User ID: {design.userId}
                                         </p>
                                         <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${design.status === 'Pending' ? 'bg-yellow-500/20 text-yellow-500' :
-                                                design.status === 'Reviewed' ? 'bg-blue-500/20 text-blue-500' :
-                                                    design.status === 'InProduction' ? 'bg-purple-500/20 text-purple-500' :
-                                                        design.status === 'Completed' ? 'bg-green-500/20 text-green-500' :
-                                                            'bg-red-500/20 text-red-500'
+                                            design.status === 'Reviewed' ? 'bg-blue-500/20 text-blue-500' :
+                                                design.status === 'InProduction' ? 'bg-purple-500/20 text-purple-500' :
+                                                    design.status === 'Completed' ? 'bg-green-500/20 text-green-500' :
+                                                        'bg-red-500/20 text-red-500'
                                             }`}>
                                             {design.status}
                                         </span>
@@ -132,10 +163,19 @@ export default function DesignsAdmin() {
 
                                         <button
                                             onClick={() => handleUpdateStatus(selectedDesign.id, selectedDesign.status)}
-                                            className="btn-primary w-full justify-center text-xs"
+                                            className="btn-primary w-full justify-center text-xs mb-4"
                                         >
                                             Save Changes
                                         </button>
+
+                                        {selectedDesign.status === 'Completed' && (
+                                            <button
+                                                onClick={handleAddToShop}
+                                                className="btn-secondary w-full justify-center text-xs flex items-center gap-2 border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-brand-black"
+                                            >
+                                                <HiOutlinePlus size={14} /> Add to Shop Product
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
