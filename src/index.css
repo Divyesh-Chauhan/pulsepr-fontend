@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-brand-black text-brand-white font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-gray;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-white;
+  }
+
+  ::selection {
+    @apply bg-brand-accent text-brand-black;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-accent text-brand-black font-semibold px-6 py-3 rounded-none uppercase tracking-widest text-sm
+           hover:bg-white transition-all duration-200 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-brand-white font-semibold px-6 py-3 border border-brand-border rounded-none uppercase tracking-widest text-sm
+           hover:bg-brand-gray hover:border-brand-white transition-all duration-200 active:scale-95 inline-flex items-center gap-2;
+  }
+
+  .btn-danger {
+    @apply bg-transparent text-red-500 font-semibold px-4 py-2 border border-red-500/40 rounded-none uppercase tracking-widest text-xs
+           hover:bg-red-500/10 transition-all duration-200 active:scale-95;
+  }
+
+  .card {
+    @apply bg-brand-gray border border-brand-border rounded-none;
+  }
+
+  .input-field {
+    @apply w-full bg-brand-gray border border-brand-border text-brand-white placeholder-brand-muted px-4 py-3 rounded-none
+           focus:outline-none focus:border-brand-accent transition-colors duration-200 text-sm;
+  }
+
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-widest text-brand-muted mb-2;
+  }
+
+  .section-title {
+    @apply font-display text-5xl md:text-7xl uppercase text-brand-white;
+  }
+
+  .tag {
+    @apply text-xs font-semibold uppercase tracking-widest px-2 py-1;
+  }
+
+  .status-badge {
+    @apply text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full;
+  }
+
+  .admin-stat-card {
+    @apply card p-6 flex flex-col gap-2 hover:border-brand-accent transition-colors duration-300;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-accent to-white bg-clip-text text-transparent;
+  }
+
+  .border-glow {
+    box-shadow: 0 0 20px rgba(212, 255, 0, 0.15);
+  }
+}
+
+/* Page transition */
+.page-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Product image hover */
+.product-img-wrapper img {
+  transition: transform 0.5s ease;
+}
+.product-img-wrapper:hover img {
+  transform: scale(1.05);
+}
