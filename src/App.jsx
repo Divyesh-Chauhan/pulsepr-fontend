@@ -31,6 +31,7 @@ import EditProduct from './admin/EditProduct'
 import OrdersAdmin from './admin/OrdersAdmin'
 import UsersAdmin from './admin/UsersAdmin'
 import OffersAdmin from './admin/OffersAdmin'
+import DesignsAdmin from './admin/DesignsAdmin'
 import AdminLayout from './admin/AdminLayout'
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
                     <Route path="orders" element={<OrdersAdmin />} />
                     <Route path="users" element={<UsersAdmin />} />
                     <Route path="offers" element={<OffersAdmin />} />
+                    <Route path="designs" element={<DesignsAdmin />} />
                 </Route>
 
                 {/* Public + User Routes */}

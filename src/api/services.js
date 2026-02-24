@@ -46,6 +46,11 @@ export const adminApplyOffer = (data) => api.post('/api/admin/offers/apply', dat
 
 // ============ USER — ORDERS ============
 export const getUserOrders = () => api.get('/api/auth/orders')
+
+// ============ ADMIN — DESIGNS ============
+export const adminGetAllDesigns = () => api.get('/api/admin/designs')
+export const adminUpdateDesignStatus = (id, status, adminNote) =>
+    api.patch(`/api/admin/designs/${id}/status`, { status, adminNote })
 // ============ USER — DESIGNS ============
 export const uploadDesign = (formData) =>
     api.post('/api/designs/upload', formData)

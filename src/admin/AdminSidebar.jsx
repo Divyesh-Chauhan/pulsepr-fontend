@@ -18,6 +18,7 @@ const navItems = [
     { to: '/admin/orders', label: 'Orders', icon: HiOutlineClipboardList },
     { to: '/admin/users', label: 'Users', icon: HiOutlineUsers },
     { to: '/admin/offers', label: 'Offers', icon: HiOutlineTag },
+    { to: '/admin/designs', label: 'Designs', icon: HiOutlineClipboardList },
 ]
 
 export default function AdminSidebar({ onClose }) {
