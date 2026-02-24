@@ -27,7 +27,7 @@ export default function Orders() {
         const fetchOrders = async () => {
             try {
                 // Fetch user's own orders from the user-specific endpoint
-                const res = await api.get('/api/orders/my')
+                const res = await api.get('/api/auth/orders')
                 setOrders(res.data.orders || [])
             } catch {
                 // Fallback: if no user-specific route, show empty

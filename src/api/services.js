@@ -26,9 +26,7 @@ export const adminAddProduct = (data) => api.post('/api/admin/product/add', data
 export const adminUpdateProduct = (id, data) => api.put(`/api/admin/product/update/${id}`, data)
 export const adminDeleteProduct = (id) => api.delete(`/api/admin/product/delete/${id}`)
 export const adminUploadImages = (formData) =>
-    api.post('/api/admin/product/upload-image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    api.post('/api/admin/product/upload-image', formData)
 
 // ============ ADMIN — ORDERS ============
 export const adminGetOrders = () => api.get('/api/admin/orders')
@@ -47,12 +45,10 @@ export const adminCreateOffer = (data) => api.post('/api/admin/offers', data)
 export const adminApplyOffer = (data) => api.post('/api/admin/offers/apply', data)
 
 // ============ USER — ORDERS ============
-export const getUserOrders = () => api.get('/api/admin/orders') // user sees own orders via admin if needed
+export const getUserOrders = () => api.get('/api/auth/orders')
 // ============ USER — DESIGNS ============
 export const uploadDesign = (formData) =>
-    api.post('/api/designs/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    api.post('/api/designs/upload', formData)
 export const getMyDesigns = () => api.get('/api/designs/my-designs')
 export const getDesignById = (id) => api.get(`/api/designs/${id}`)
 export const deleteDesign = (id) => api.delete(`/api/designs/${id}`)
