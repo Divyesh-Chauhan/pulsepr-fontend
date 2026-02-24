@@ -25,22 +25,8 @@ export const adminGetProducts = () => api.get('/api/admin/products')
 export const adminAddProduct = (data) => api.post('/api/admin/product/add', data)
 export const adminUpdateProduct = (id, data) => api.put(`/api/admin/product/update/${id}`, data)
 export const adminDeleteProduct = (id) => api.delete(`/api/admin/product/delete/${id}`)
-export const adminUploadImages = async (formData) => {
-    const token = localStorage.getItem('pulsepr_token')
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    const response = await fetch(`${baseURL}/api/admin/product/upload-image`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-        body: formData
-    })
-    const data = await response.json()
-    if (!response.ok) {
-        throw { response: { data } }
-    }
-    return { data }
-}
+export const adminUploadImages = (formData) =>
+    api.post('/api/admin/product/upload-image', formData)
 
 // ============ ADMIN — ORDERS ============
 export const adminGetOrders = () => api.get('/api/admin/orders')
@@ -61,22 +47,8 @@ export const adminApplyOffer = (data) => api.post('/api/admin/offers/apply', dat
 // ============ USER — ORDERS ============
 export const getUserOrders = () => api.get('/api/auth/orders')
 // ============ USER — DESIGNS ============
-export const uploadDesign = async (formData) => {
-    const token = localStorage.getItem('pulsepr_token')
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    const response = await fetch(`${baseURL}/api/designs/upload`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-        body: formData
-    })
-    const data = await response.json()
-    if (!response.ok) {
-        throw { response: { data } }
-    }
-    return { data }
-}
+export const uploadDesign = (formData) =>
+    api.post('/api/designs/upload', formData)
 export const getMyDesigns = () => api.get('/api/designs/my-designs')
 export const getDesignById = (id) => api.get(`/api/designs/${id}`)
 export const deleteDesign = (id) => api.delete(`/api/designs/${id}`)
