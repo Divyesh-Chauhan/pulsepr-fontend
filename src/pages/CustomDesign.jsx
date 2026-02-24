@@ -11,7 +11,7 @@ export default function CustomDesign() {
     const [loading, setLoading] = useState(true)
     const [uploading, setUploading] = useState(false)
     const [file, setFile] = useState(null)
-    const [formData, setFormData] = useState({ title: '', address: '', note: '', printSize: '', quantity: 1 })
+    const [formData, setFormData] = useState({ title: '', tshirtSize: '', address: '', note: '', printSize: '', quantity: 1 })
 
     const handleDragOver = (e) => {
         e.preventDefault()
@@ -44,6 +44,7 @@ export default function CustomDesign() {
         e.preventDefault()
         if (!file) return toast.error('Please select an image file first')
         if (!formData.title.trim()) return toast.error('Please enter a title')
+        if (!formData.tshirtSize) return toast.error('Please select a T-Shirt size')
         if (!formData.address.trim()) return toast.error('Please enter an address')
 
         setUploading(true)
@@ -60,7 +61,7 @@ export default function CustomDesign() {
             },
             theme: { color: '#d4ff00' },
             handler: async (response) => {
-                const mergedNote = `Title: ${formData.title} | Address: ${formData.address} | Note: ${formData.note} | PaymentID: ${response.razorpay_payment_id}`
+                const mergedNote = `Title: ${formData.title} | T-Shirt: ${formData.tshirtSize} | Address: ${formData.address} | Note: ${formData.note} | PaymentID: ${response.razorpay_payment_id}`
 
                 const data = new FormData()
                 data.append('design', file)
@@ -72,7 +73,7 @@ export default function CustomDesign() {
                     await uploadDesign(data)
                     toast.success('Payment successful & Design uploaded!')
                     setFile(null)
-                    setFormData({ title: '', address: '', note: '', printSize: '', quantity: 1 })
+                    setFormData({ title: '', tshirtSize: '', address: '', note: '', printSize: '', quantity: 1 })
                     fetchDesigns()
                 } catch (err) {
                     toast.error(err.response?.data?.message || 'Failed to upload design after payment')
@@ -153,6 +154,23 @@ export default function CustomDesign() {
                                     required
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
+                            </div>
+
+                            <div>
+                                <label className="label">T-Shirt Size *</label>
+                                <select
+                                    className="input-field cursor-pointer"
+                                    value={formData.tshirtSize}
+                                    required
+                                    onChange={(e) => setFormData({ ...formData, tshirtSize: e.target.value })}
+                                >
+                                    <option value="" disabled>Select a size</option>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
+                                </select>
                             </div>
 
                             <div>
